@@ -1,70 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    {% load static %}
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>{% block title %} {% endblock %}</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-        <a class="navbar-brand" href="/">All time Bazar</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarText">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">Products</a>
-                </li>
+{% extends 'base.html' %}
+{% load cart %}
+{% block title %} Eshop | Product {% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-2 mb-3">
+            <ul class="list-group">
+                <li class="list-group-item active bg-secondary border-0"><a style="text-decoration:none; color:white;" href="/">All Category</a></li>
+                {% for category in categories %}
+                <li class="list-group-item ctg"><a style="text-decoration:none; color:black;" href="/?category_id={{ category.id }}">{{ category.name }}</a></li>
+                {% endfor %}
             </ul>
-            <form class="form-inline">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/cart">Cart
-                        <span class="badge badge-info">{{ request.session.cart.keys|length }}</span>
-                        </a>
-                    </li>
-                    {% if request.session.customer %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="/order">Order</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Profile</a>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="/signup">Signup</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/login">Login</a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </form>
         </div>
-    </nav>
-    {% if signupSuccess %}
-        {{ signupSuccess }}
-    {% endif %}
-
-    {% block content %}
-    {% endblock %}
-
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-</body>
-
-</html>
+        <div class="col-md-10">
+            <div class="row product-row mx-auto mb-2">
+                {% if products|length == 0 %}
+                <div class="alert alert-warning col-12">
+                    <strong>
+                        <h3>No Product Found!</h3>
+                    </strong>
+                </div>
+                {% elif products|length > 0 %}
+                    {% for product in products %}
+                    <div id="{{ product.id }}" class="col-md-4 mb-4">
+                        <div class="card product-card mb-2">
+                            <img class="card-img-top" src="{{ product.image.url }}" height="200px" alt="Card image cap">
+                            <div class="card-body">
+                                <p class="card-title">{{ product.name|truncatechars:60 }}</p>
+                                <p class="card-text">{{ product.price|currency }}</p>
+                                <form action="/#{{ product.id }}" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" value="{{ product.id }}" name="product">
+                                    {% if product|is_in_cart:request.session.cart %}
+                                    <a class="btn btn-warning" href="/cart">Go to cart </a>
+                                    {% else %}
+                                    <input class="btn btn-primary" type="submit" value="Add to cart">
+                                    {% endif %}
+                                    <a class="btn btn-success" href="/?id={{ product.id }}">View</a>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
